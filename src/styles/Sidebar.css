@@ -1,0 +1,7 @@
+/* Sidebar.css hoặc thêm vào trong tệp tailwind.css */
+.sidebar {
+    position: fixed;
+    height: 100vh;
+    /* Các thuộc tính CSS khác nếu cần */
+  }
+  
