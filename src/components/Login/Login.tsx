@@ -22,9 +22,9 @@ const Login = (chirdren: any) => {
       // Lưu token vào cookies hoặc local storage nếu cần
       localStorage.setItem("accessToken", response.data.access_token);
       localStorage.setItem("refreshToken", response.data.refresh_token);
-      // localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("isLoggedIn", "true");
       toast("Đăng nhập thành công");
-      navigate("/admin/products");
+      navigate("/sidebar");
     } catch (error) {
       console.error("Đăng nhập thất bại:", error);
       toast("Đăng nhập thất bại !!!");

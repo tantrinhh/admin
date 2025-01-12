@@ -1,8 +1,8 @@
 import React, { useState, Fragment, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/ProductList.css";
+import "../../styles/ProductList.css";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { EditPencil, Sort } from "iconoir-react";
+import { EditPencil } from "iconoir-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Dialog, Transition } from "@headlessui/react";
@@ -12,14 +12,11 @@ import {
   productSelectors,
   getProductById,
   deleteProductById,
-} from "../redux/slice/product";
-import { useAppDispatch } from "../redux/hook/redux";
-import { Product } from "../redux/slice/product/type";
-import ProductModal from "./ProductModal";
+} from "../../redux/slice/product";
+import { useAppDispatch } from "../../redux/hook/redux";
+import { Product } from "../../redux/slice/product/type";
 import { FaRegEye } from "react-icons/fa";
-import Sidebar from "./Sidebar";
-//import Header from "./Layout/Header";
-
+import ProductModal from "../../common/ProductModal";
 const ProductList: React.FC = () => {
   const productsSelector = useSelector(productSelectors.selectAll);
   const dispatch = useAppDispatch();
@@ -38,7 +35,7 @@ const ProductList: React.FC = () => {
     dispatch(getProductById(productId)).then((response: any) => {
       setDataToShow(response.data);
       setShowModal(true);
-      navigate("/admin/products");
+      navigate("/productlist");
     });
   };
   const closeModal = () => setShowModal(false);
@@ -49,7 +46,9 @@ const ProductList: React.FC = () => {
     setDataToDeleteId(productId);
     setIsOpen(true);
   }
-  const [productPerPage, setProductPerPage] = useState<number | string>(40); // Số sản phẩm trên mỗi trang
+  const [productPerPage, setProductPerPage] = useState<number | string>(10); // Số sản phẩm trên mỗi trang
+  console.log(setProductPerPage);
+
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
   const totalPages = Math.ceil(
     productsSelector.length / (+productPerPage || 1)
@@ -62,6 +61,7 @@ const ProductList: React.FC = () => {
     indexOfFirstProduct,
     indexOfLastProduct
   );
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
   const removeProduct = async (productId: any) => {
     try {
       // Fetch product details
@@ -70,7 +70,7 @@ const ProductList: React.FC = () => {
       // Once the product details are fetched, dispatch the delete action
       dispatch(deleteProductById(productId));
 
-      // Show success toast
+      console.error("Error while removing product:", productId);
       toast.success("Xóa thành công");
     } catch (error) {
       // Handle errors, e.g., show an error toast
@@ -81,51 +81,125 @@ const ProductList: React.FC = () => {
   const getAllProduct = () => {
     dispatch(getProduct());
   };
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  const handlePageChange = (page: any) => {
+    setCurrentPage(page);
+  };
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  const handleSort = () => {
+    if (sortOrder === "asc") {
+      setSortOrder("desc"); // Chuyển sang giảm dần
+    } else {
+      setSortOrder("asc"); // Chuyển sang tăng dần
+    }
+  };
+
+  // Sắp xếp dữ liệu dựa trên trạng thái
+  const sortedData = [...currentdata].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a.price - b.price; // Tăng dần
+    }
+    if (sortOrder === "desc") {
+      return b.price - a.price; // Giảm dần
+    }
+    return 0; // Không sắp xếp
+  });
   return (
     <>
       <div className="flex">
-        <Sidebar
-          sidebarOpen={false}
-          setSidebarOpen={function (arg: boolean): void {
-            throw new Error("Function not implemented.");
-          }}
-        />
-        <div className="flex-1 py-24 px-10">
+        <div className="flex-1 pr-10">
           <h1 className="text-center font-bold text-[30px]"> List Products </h1>
           <div className="space-y-10 mt-10">
-            <Link
-              to="/addProduct"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline my-5"
-            >
+            <div className="flex justify-between my-auto">
               {" "}
-              Add Product{" "}
-            </Link>
+              <Link
+                to="/addProduct"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline my-5"
+              >
+                {" "}
+                Add Product{" "}
+              </Link>
+              <input
+                type="text"
+                placeholder="Search "
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="px-3 py-1 my-auto border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-10 mx-20"
+              />
 
-            <input
-              type="text"
-              placeholder="Search "
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mx-20"
-            />
-            <table className="table table-bordered table-striped">
-              <thead>
-                <th> Image </th>
-                <th>
-                  Product name
-                  <Sort className="cursor-pointer" />
+            </div>
+            <div className=" w-[1150px] overflow-x-auto"><table className="min-w-[1800px]  ">
+              <thead className="">
+                <th className="w-32"> Ảnh </th>
+                <th className="w-52">
+                  Tên sản phẩm
                 </th>
-                <th> Description </th>
-                <th> Price </th>
-                <th> Discount </th>
-                <th>Count</th>
-                <th>Sizes</th>
-                <th>Colors</th>
-                <th> Created at</th>
-                <th> Actions </th>
+                <th className="w-[300px]">Mô tả ngắn</th>
+                <th className="w-[300px] "> Mô tả </th>
+                <th
+                  className="w-32 cursor-pointer flex items-center"
+                  onClick={handleSort}
+                >
+                  Giá
+                  <span className="ml-2">
+                    {sortOrder === "asc" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-green-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                      </svg>
+                    )}
+                    {sortOrder === "desc" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-red-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                    {!sortOrder && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-gray-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4l6 8H6l6-8z" />
+                      </svg>
+                    )}
+                  </span>
+                </th>
+
+                <th className="w-40"> Giảm giá </th>
+                <th className="w-40">Số lượng</th>
+                <th className="w-40">Bộ sưu tập</th>
+                <th className="w-40">Thương hiệu</th>
+                <th className="w-40">Kích thước</th>
+                <th className="w-40">Màu sắc</th>
+                <th className="w-40"> Ngày tạo</th>
+                <th className="w-40">Hành động </th>
               </thead>
               <tbody>
-                {currentdata
+                {sortedData
                   .filter(
                     (product: Product) =>
                       product.name
@@ -145,10 +219,16 @@ const ProductList: React.FC = () => {
                         />
                       </td>
                       <td> {product.name} </td>
-                      <td>{product.description}</td>
-                      <td>Rs. {product.price.toLocaleString()}</td>
+                      <td className="max-w-[100px] overflow-hidden">{product.shortdescription}</td>
+                      <td className="max-w-[300px] overflow-hidden">{product.description}</td>
+                      <td> {product.price.toLocaleString()} đ</td>
                       <td>{product.discount}%</td>
-                      <td>{product.count}</td>
+                      <td>{product.quantity}</td>
+                      <td>{product.collection}</td>
+                      <td>
+                        {/* <span>{product.brands || "No brand selected"}</span> */}
+                      </td>
+
                       <td>
                         {product.sizes?.map((size, index) => (
                           <span key={index}>
@@ -190,33 +270,42 @@ const ProductList: React.FC = () => {
               {showModal && dataToShow !== null && (
                 <ProductModal onClose={closeModal} data={dataToShow} />
               )}
-            </table>
+            </table></div>
             <div className="pagination text-center space-y-5">
               <p>
                 Page {currentPage} of {totalPages}
               </p>
               <div className="space-x-5 flex  justify-center">
                 <button
-                  // onClick={() => dispatch(setCurrentPage(Math.max(currentPage - 1, 1)))}
+
+                  onClick={handlePrevPage}
                   disabled={currentPage === 1}
                   className={`pagination-button`}
                 >
                   Previous
                 </button>
-                <div className="page-numbers">
-                  {Array.from({ length: totalPages }, (_, index) => (
-                    <button
-                      key={index}
-                      // onClick={() => dispatch(setCurrentPage(index + 1))}
-                      className={`pagination-number ${
-                        index + 1 === currentPage ? "active" : ""
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handlePageChange(index + 1)}
+                    className={`px-4 py-2 mx-2 rounded-lg ${currentPage === index + 1
+                      ? "bg-[#B88E2F] text-white"
+                      : "bg-gray-200"
                       }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-                </div>
-                <button className={`pagination-button`}>Next</button>
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={handleNextPage}
+                  className={`px-4 py-2 mx-2 rounded-lg ${currentPage === totalPages
+                    ? "bg-gray-200 cursor-not-allowed"
+                    : "bg-[#B88E2F] text-white"
+                    }`}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
               </div>
             </div>
             <ToastContainer />

@@ -6,7 +6,7 @@ import { lazy } from 'react';
 // const FormLayout = lazy(() => import('../pages/Form/FormLayout'));
 // const Profile = lazy(() => import('../pages/Profile'));
 // const Settings = lazy(() => import('../pages/Settings'));
-const Tables = lazy(() => import('../components/ProductList'));
+const Tables = lazy(() => import('../components/ProductList/ProductList'));
 // const Alerts = lazy(() => import('../pages/UiElements/Alerts'));
 // const Buttons = lazy(() => import('../pages/UiElements/Buttons'));
 

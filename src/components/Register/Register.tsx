@@ -25,7 +25,7 @@ const Registerr = () => {
 
       // Hiển thị thông báo và chuyển hướng đến trang sản phẩm
       toast("Đăng ký thành công");
-      navigate("/admin/products");
+      navigate("/sidebar");
     } catch (error) {
       console.error("Đăng ký thất bại:", error);
       toast("Đăng ký thất bại !!!");

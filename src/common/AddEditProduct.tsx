@@ -12,32 +12,20 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
-import FileUpload from "./FileUpload";
-
 const AddEditProduct: React.FC = () => {
-  // const [formData,setFormData] = useState<Product>({
-  //   id:0,
-  //   image:"",
-  //   name:"",
-  //   description:"",
-  //   price:0,
-  //   discount:0,
-  //   count:0,
-  //   sizes:[],
-  //   colors:[],
-  //   dateAdded:"",
-  // } )
   const [image, setImage] = useState("");
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState<number>(0);
   const [discount, setDiscount] = useState<number>(0);
   const [date, setDate] = useState("");
-  const [count, setCount] = useState<number>(0);
+  const [collection, setCollection] = useState<number>(0);
   const [sizes, setSizes] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
+  const [shortdescription, setShortdescription] = useState("");
+  const [quantity, setqQuantity] = useState<number>(0);
+  const [brands, setBrands] = useState<string | null>(null);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -55,18 +43,20 @@ const AddEditProduct: React.FC = () => {
   // Set form fields based on the selected product (if in update mode)
   useEffect(() => {
     if (selectedProduct && id) {
-      // setFormData({
-      //  ...formData,image:selectedProduct.image, name:selectedProduct.name, description: selectedProduct.description, price: selectedProduct.price, discount: selectedProduct.discount, count: selectedProduct.count, sizes: selectedProduct.sizes as string[], colors: selectedProduct.colors as string[], dateAdded: dayjs(selectedProduct.dateAdded).format('YYYY-MM-DD')
-      // })
+
       setImage(selectedProduct.image);
       setProductName(selectedProduct.name);
       setDescription(selectedProduct.description);
       setPrice(selectedProduct.price);
       setDiscount(selectedProduct.discount);
       setDate(dayjs(selectedProduct.dateAdded).format("YYYY-MM-DD"));
-      setCount(selectedProduct.count);
+      setCollection(selectedProduct.collection);
       setSizes(selectedProduct.sizes as string[]);
       setColors(selectedProduct.colors as string[]);
+      setShortdescription(selectedProduct.shortdescription);
+      setqQuantity(selectedProduct.quantity);
+      setBrands(selectedProduct.brands?.[0] || "");
+
     }
   }, [selectedProduct, id]);
   console.log(selectedProduct, "selectedProduct");
@@ -74,10 +64,7 @@ const AddEditProduct: React.FC = () => {
     e.preventDefault();
     // Kiểm tra xem có trường nào để trống không
     const errors: Record<string, string> = {};
-    if (!image.trim()) {
-      errors.image = "Image không được để trống";
-      toast.error(errors.image);
-    }
+
     if (!productName.trim()) {
       errors.productName = "Product Name không được để trống";
       toast.error(errors.productName);
@@ -94,9 +81,9 @@ const AddEditProduct: React.FC = () => {
       errors.discount = "Discount phải là 1 số >= 0";
       toast.error(errors.discount);
     }
-    if (count <= 0) {
-      errors.count = "Count phải là 1 số > 0";
-      toast.error(errors.count);
+    if (collection < 0) {
+      errors.collection = "Collecton phải là 1 số >= 0";
+      toast.error(errors.collection);
     }
     if (sizes.length === 0) {
       toast.error("Bạn phải chọn ít nhất 1 size");
@@ -117,15 +104,18 @@ const AddEditProduct: React.FC = () => {
       return;
     }
     const product: Partial<Product> = {
-      image: selectedFile ? URL.createObjectURL(selectedFile) : image,
+      image: image,
       name: productName,
       description: description,
       price: price,
       discount: discount,
       dateAdded: date,
-      count: count,
+      collection: collection,
       sizes: sizes,
       colors: colors,
+      shortdescription: shortdescription,
+      quantity: quantity,
+      brands: brands || "",
     };
     if (id) {
       // Update existing product
@@ -135,7 +125,7 @@ const AddEditProduct: React.FC = () => {
       // Fetch the updated product details after the update
       await dispatch(getProductById(Number(id)) as any);
       toast.success("Cập nhật thành công");
-      navigate("/admin/products");
+      navigate("/productlist");
     } else {
       // Add new product
       const addedProduct = await dispatch(addNewProduct(product) as any);
@@ -143,15 +133,9 @@ const AddEditProduct: React.FC = () => {
       // Fetch the details of the newly added product
       await dispatch(getProductById(addedProduct.id) as any);
       toast.success("Thêm thành công");
-      navigate("/admin/products");
+      navigate("/productlist");
     }
-  };
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleFileUpload = (file: File) => {
-    setSelectedFile(file);
-    // Optionally set the image state for preview
-    setImage(URL.createObjectURL(file)); // đoạn đây á anh anh đang đặt một url trỏ đến nó
   };
 
   return (
@@ -167,10 +151,14 @@ const AddEditProduct: React.FC = () => {
                 <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
                   Image:
                 </label>
-                <FileUpload onFileUpload={handleFileUpload} />
-                {selectedFile && <p>Selected File: {selectedFile.name}</p>}
+                <input
+                  type="text"
+                  placeholder="Enter image URL"
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                />
+                {image && <p>Selected Image: {image}</p>}
               </div>
-
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
                   Product Name:
@@ -179,14 +167,25 @@ const AddEditProduct: React.FC = () => {
                   type="text"
                   placeholder="Enter product name"
                   name="name"
-                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                    formErrors.name ? "border-red-500" : ""
-                  }`}
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.name ? "border-red-500" : ""
+                    }`}
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
                 />
               </div>
-
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
+                  Shortdescription:
+                </label>
+                <textarea
+                  placeholder="Enter description"
+                  name="shortdescription"
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.shortdescription ? "border-red-500" : ""
+                    }`}
+                  value={shortdescription}
+                  onChange={(e) => setShortdescription(e.target.value)}
+                ></textarea>
+              </div>
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
                   Description:
@@ -194,14 +193,12 @@ const AddEditProduct: React.FC = () => {
                 <textarea
                   placeholder="Enter description"
                   name="description"
-                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                    formErrors.description ? "border-red-500" : ""
-                  }`}
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.description ? "border-red-500" : ""
+                    }`}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 ></textarea>
               </div>
-
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
                   Price:
@@ -210,9 +207,8 @@ const AddEditProduct: React.FC = () => {
                   type="number"
                   placeholder="Enter price"
                   name="price"
-                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                    formErrors.price ? "border-red-500" : ""
-                  }`}
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.price ? "border-red-500" : ""
+                    }`}
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
                 ></input>
@@ -226,28 +222,64 @@ const AddEditProduct: React.FC = () => {
                   type="number"
                   placeholder="Enter discount"
                   name="discount"
-                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                    formErrors.discount ? "border-red-500" : ""
-                  }`}
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.discount ? "border-red-500" : ""
+                    }`}
                   value={discount}
                   onChange={(e) => setDiscount(Number(e.target.value))}
                 ></input>
               </div>
-
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
-                  Count:
+                  Quantity:
                 </label>
                 <input
                   type="number"
-                  placeholder="Enter count"
-                  name="count"
-                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                    formErrors.count ? "border-red-500" : ""
-                  }`}
-                  value={count}
-                  onChange={(e) => setCount(Number(e.target.value))}
+                  placeholder="Enter quantity"
+                  name="quantity"
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.quantity ? "border-red-500" : ""
+                    }`}
+                  value={quantity}
+                  onChange={(e) => setqQuantity(Number(e.target.value))}
                 ></input>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
+                  Collection:
+                </label>
+                <textarea
+                  placeholder="Enter collection"
+                  name="collection"
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.description ? "border-red-500" : ""
+                    }`}
+                  value={collection}
+                  onChange={(e) => setCollection(Number(e.target.value))}
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">Brand:</label>
+                <div className="flex space-x-5">
+                  {["GUCCI", "VIETTIEP", "DIOR", "CHANEL", "PRADA"].map((brand) => (
+                    <div className="flex" key={brand}>
+                      <input
+                        id={`brand-radio-${brand}`}
+                        type="radio"
+                        name="brand"
+                        value={brand}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        checked={brands === brand}
+                        onChange={() => setBrands(brand)} // Đảm bảo cập nhật `brands` ở đây
+                      />
+                      <label
+                        htmlFor={`brand-radio-${brand}`}
+                        className="ms-1 text-sm font-medium text-gray-900"
+                      >
+                        {brand}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+
               </div>
 
               <div className="flex mt-5 space-x-2">
@@ -267,8 +299,8 @@ const AddEditProduct: React.FC = () => {
                           setSizes((prevSizes) =>
                             prevSizes.includes(size)
                               ? prevSizes.filter(
-                                  (prevSize) => prevSize !== size
-                                )
+                                (prevSize) => prevSize !== size
+                              )
                               : [...prevSizes, size]
                           );
                         }}
@@ -289,7 +321,7 @@ const AddEditProduct: React.FC = () => {
                   Colors:
                 </label>
                 <div className="flex space-x-5">
-                  {["Green", "Black", "Red", "Yellow", "Purple"].map(
+                  {["White", "Black", "Red", "Gray", "Teal", "Orange", "Beige"].map(
                     (color) => (
                       <div className="flex items-center" key={color}>
                         <input
@@ -302,21 +334,20 @@ const AddEditProduct: React.FC = () => {
                             setColors((prevColors) =>
                               prevColors.includes(color)
                                 ? prevColors.filter(
-                                    (prevColor) => prevColor !== color
-                                  )
+                                  (prevColor) => prevColor !== color
+                                )
                                 : [...prevColors, color]
                             );
                           }}
                         />
                         <label
                           htmlFor={`color-checkbox-${color}`}
-                          className={`cursor-pointer w-6 h-6 flex items-center justify-center border border-gray-300 rounded-full focus:outline-none ${
-                            colors.includes(color)
-                              ? "bg-" +
-                                color.toLowerCase() +
-                                "-500 border-transparent"
-                              : "bg-gray-100 border-gray-300"
-                          }`}
+                          className={`cursor-pointer w-6 h-6 flex items-center justify-center border border-gray-300 rounded-full focus:outline-none ${colors.includes(color)
+                            ? "bg-" +
+                            color.toLowerCase() +
+                            "-500 border-transparent"
+                            : "bg-gray-100 border-gray-300"
+                            }`}
                         >
                           {colors.includes(color) && (
                             <div
@@ -341,9 +372,8 @@ const AddEditProduct: React.FC = () => {
                 <input
                   type="date"
                   name="dateAdded"
-                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                    formErrors.date ? "border-red-500" : ""
-                  }`}
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.date ? "border-red-500" : ""
+                    }`}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />
@@ -358,7 +388,7 @@ const AddEditProduct: React.FC = () => {
                   Submit
                 </button>
                 <Link
-                  to="/admin/products"
+                  to="/productlist"
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline my-5"
                   type="button"
                 >
