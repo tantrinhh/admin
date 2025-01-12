@@ -10,6 +10,8 @@ import Sidebarr from "../pages/sidebar/sidebar";
 import Indexx from "../pages/productnew";
 import Index from "../pages/productsale";
 import Chart from "../pages/chart";
+import UserInfoPage from "../components/User/User";
+import User from "../pages/user";
 
 
 const AppRouter = () => {
@@ -45,6 +47,14 @@ const AppRouter = () => {
             element={
               <PrivateRouter>
                 <Indexx />
+              </PrivateRouter>
+            }
+          />
+          <Route
+            path="/user"
+            element={
+              <PrivateRouter>
+                <User />
               </PrivateRouter>
             }
           />

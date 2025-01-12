@@ -46,7 +46,7 @@ const ProductList: React.FC = () => {
     setDataToDeleteId(productId);
     setIsOpen(true);
   }
-  const [productPerPage, setProductPerPage] = useState<number | string>(10); // Số sản phẩm trên mỗi trang
+  const [productPerPage, setProductPerPage] = useState<number | string>(40); // Số sản phẩm trên mỗi trang
   console.log(setProductPerPage);
 
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
@@ -115,7 +115,7 @@ const ProductList: React.FC = () => {
   return (
     <>
       <div className="flex">
-        <div className="flex-1 pr-10">
+        <div className="flex-1 ">
           <h1 className="text-center font-bold text-[30px]"> List Products </h1>
           <div className="space-y-10 mt-10">
             <div className="flex justify-between my-auto">

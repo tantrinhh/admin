@@ -23,6 +23,8 @@ const Login = (chirdren: any) => {
       localStorage.setItem("accessToken", response.data.access_token);
       localStorage.setItem("refreshToken", response.data.refresh_token);
       localStorage.setItem("isLoggedIn", "true");
+      const userData = response.data; // Thông tin người dùng từ API
+      localStorage.setItem("user", JSON.stringify(response.data.user));
       toast("Đăng nhập thành công");
       navigate("/sidebar");
     } catch (error) {

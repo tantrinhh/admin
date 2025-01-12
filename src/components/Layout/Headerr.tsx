@@ -10,9 +10,7 @@ const Headerr = () => {
         </div>
         <div className='h-4 bg-black'>
         </div>
-        <div >
-          <Link to="/admin/logout"> <LuLogOut style={{ width: "30px", height: "30px", }} /></Link>
-        </div>
+
       </div>
     </>
   )

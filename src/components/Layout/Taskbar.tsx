@@ -1,11 +1,11 @@
-
+import { FaRegUserCircle } from "react-icons/fa";
 import { Link, useLocation } from 'react-router-dom'
 const Taskbar = () => {
   const location = useLocation(); // Lấy đường dẫn hiện tại
   return (
     <>
-      <div className='mr-72 mt-14'>
-        <div className='fixed z-40 w-64 mr-20 bg-[#3E3E3E]  text-lg pt-14 flex flex-col gap-10 h-screen'>
+      <div className=' mt-14 mb-20'>
+        <div className=' w-64 mr-20 bg-[#3E3E3E]  text-lg pt-14 flex flex-col gap-10 '>
           <div
             className={`pb-10 pl-5 cursor-pointer border-b border-solib ${location.pathname === '/sidebar' ? 'text-[#b48744]' : 'text-[#B8B8B8]'}`}
           >
@@ -30,8 +30,13 @@ const Taskbar = () => {
             className={`pb-10 pl-5 cursor-pointer border-b border-solib ${location.pathname === '/productsale' ? 'text-[#b48744]' : 'text-[#B8B8B8]'}`}
           >
             <Link to="/productsale">Sản phẩm giảm giá</Link>
-          </div>
+          </div >
+          <Link to="/user" className="mx-auto"><div className="text-white mb-10  mx-auto"><FaRegUserCircle style={{ width: "80px", height: "80px", }} />
+          </div></Link>
+
+
         </div>
+
       </div>
 
     </>
