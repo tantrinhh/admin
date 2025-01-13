@@ -25,7 +25,7 @@ const AddEditProduct: React.FC = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [shortdescription, setShortdescription] = useState("");
   const [quantity, setqQuantity] = useState<number>(0);
-  const [brands, setBrands] = useState<string | null>(null);
+  const [brands, setBrands] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -55,7 +55,7 @@ const AddEditProduct: React.FC = () => {
       setColors(selectedProduct.colors as string[]);
       setShortdescription(selectedProduct.shortdescription);
       setqQuantity(selectedProduct.quantity);
-      setBrands(selectedProduct.brands?.[0] || "");
+      setBrands(selectedProduct.brands);
 
     }
   }, [selectedProduct, id]);
@@ -256,30 +256,18 @@ const AddEditProduct: React.FC = () => {
                 ></textarea>
               </div>
               <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">Brand:</label>
-                <div className="flex space-x-5">
-                  {["GUCCI", "VIETTIEP", "DIOR", "CHANEL", "PRADA"].map((brand) => (
-                    <div className="flex" key={brand}>
-                      <input
-                        id={`brand-radio-${brand}`}
-                        type="radio"
-                        name="brand"
-                        value={brand}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                        checked={brands === brand}
-                        onChange={() => setBrands(brand)} // Đảm bảo cập nhật `brands` ở đây
-                      />
-                      <label
-                        htmlFor={`brand-radio-${brand}`}
-                        className="ms-1 text-sm font-medium text-gray-900"
-                      >
-                        {brand}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-
-
+                <label className="block text-gray-700 text-sm font-bold mb-2 mt-5">
+                  Thương hiệu:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter product name"
+                  name="brands"
+                  className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formErrors.name ? "border-red-500" : ""
+                    }`}
+                  value={brands}
+                  onChange={(e) => setBrands(e.target.value)}
+                />
               </div>
 
               <div className="flex mt-5 space-x-2">

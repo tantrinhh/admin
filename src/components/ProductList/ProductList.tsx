@@ -226,7 +226,7 @@ const ProductList: React.FC = () => {
                       <td>{product.quantity}</td>
                       <td>{product.collection}</td>
                       <td>
-                        {/* <span>{product.brands || "No brand selected"}</span> */}
+                        <span>{product.brands || "No brand selected"}</span>
                       </td>
 
                       <td>
